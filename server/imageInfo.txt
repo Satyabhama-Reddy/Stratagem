@@ -1,3 +1,13 @@
 docker image name: exampleimage
 docker image create: 
 docker image run command: 
+
+//Reference:
+to build docker:
+docker build -t flask-example:latest .
+
+to create container
+docker create -p 5000:5000 flask-example
+
+to start container
+docker start <container_id>
