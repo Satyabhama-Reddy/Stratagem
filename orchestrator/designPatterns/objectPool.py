@@ -22,10 +22,13 @@ class ContainerPool:
         self._containers = [Container() for _ in range(noOfContainers)]
 
     def acquire(self):
-        return self._containers.pop()
+        container = self._containers.pop()
+        container.start()
+        return 
 
     def release(self, container):
         # when release is called we need to make sure that the container is not servicing any requests
+        container.stop()
         self._containers.append(container)
     
     #additional functions that we need for scaling up/down that are not part of objec tpool design pattern
@@ -55,5 +58,11 @@ class Container:
         #delete docker image
         print("Container deleted")
     
-    
+    def start(self):
+        #start container
+        pass
+
+    def stop(self):
+        #stop container
+        pass
 
