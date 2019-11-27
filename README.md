@@ -1,0 +1,2 @@
+# Stratagem
+Generic server orchestrator
