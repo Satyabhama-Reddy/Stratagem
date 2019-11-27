@@ -33,7 +33,10 @@ LB source:
 
 
 Separate design pattern classes:
-	Observable, Strategy, State?
+	Observable, Strategy, Object Pool
+	Kavya		Kavya	  Satya
+	State?
+	Satya
 
 
 
