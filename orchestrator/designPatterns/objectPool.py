@@ -48,6 +48,7 @@ if __name__=="__main__":
     maxNoOfContainers = 6
     pool = ContainerPool(minNoOfContainers,maxNoOfContainers)
     container = pool.acquire()
+    container.getStats()
     container = pool.acquire()
     container = pool.acquire()
     container = pool.acquire()

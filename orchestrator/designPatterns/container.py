@@ -1,5 +1,6 @@
 import docker
 client = docker.from_env()
+from pprint import pprint
 """
 before this:
 pull repo
@@ -43,6 +44,10 @@ class Container:
 
         #stop container
         # pass
+
+    def getStats(self):
+        container=client.containers.list(filters={'id':self.id})[0]
+        pprint(container.stats(stream=False))
 """
 if __name__ == "__main__":
     c=Container()
