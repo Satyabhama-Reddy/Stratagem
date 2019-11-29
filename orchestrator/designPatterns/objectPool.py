@@ -12,6 +12,9 @@ class ContainerPool:
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
+
+        for containerInd in range(self._minContainers):
+            self.acquire()
     
     def acquire(self):
         container = self._inactiveContainers.pop()
@@ -42,6 +45,29 @@ class ContainerPool:
         for i in range(noOfContainers):
             obj = self._inactiveContainers.pop()
             del obj
+
+    def __iter__(self):
+        return ContainerIterator(self._activeContainers)
+
+    def __len__(self):
+        return len(self._activeContainers)
+
+    def __getitem__(self, key):
+        return self._activeContainers[key]
+
+class ContainerIterator():
+    def __init__(self, activeContainers):
+        self._activeContainers = activeContainers
+        self._cursor = 0
+
+    def __next__(self):
+        try:
+            nextContainer = self._activeContainers[self._cursor] 
+            self._cursor+=1
+            return nextContainer
+        except:
+            raise StopIteration
+
 """
 if __name__=="__main__":
     minNoOfContainers = 3
