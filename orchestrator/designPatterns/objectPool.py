@@ -1,22 +1,9 @@
 from container import Container
-# from activeContainers import ActiveContainers
 
 """
 Usage:
 - Import ContainerPool
 - pass minimum number of containers needed
-"""
-
-"""
-Reference:
-from objectPool import ContainerPool
-
-if __name__=="__main__":
-    minNoOfContainers = 3
-    maxNoOfContainers = 6
-    pool = ContainerPool(minNoOfContainers,maxNoOfContainers)
-    container = pool.acquire()
-    pool.release(container)
 """
 
 class ContainerPool:
@@ -25,7 +12,7 @@ class ContainerPool:
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
-
+    
     def acquire(self):
         container = self._inactiveContainers.pop()
         if(len(self._inactiveContainers) == 0 and len(self._activeContainers) < self._maxContainers):
@@ -55,3 +42,15 @@ class ContainerPool:
         for i in range(noOfContainers):
             obj = self._inactiveContainers.pop()
             del obj
+"""
+if __name__=="__main__":
+    minNoOfContainers = 3
+    maxNoOfContainers = 6
+    pool = ContainerPool(minNoOfContainers,maxNoOfContainers)
+    container = pool.acquire()
+    container.getStats()
+    container = pool.acquire()
+    container = pool.acquire()
+    container = pool.acquire()
+    pool.release(container)
+"""
