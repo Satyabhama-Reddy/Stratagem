@@ -29,6 +29,7 @@ class Container:
         self.container=container
         self.cpuUsage=None
         self.usageThread=None
+        # self.stopThread=None
         print("Created",self.port)
 
     def __del__(self):
@@ -48,11 +49,19 @@ class Container:
 
     def stop(self):
         # self.usageThread.stop()
+        ### THREADING
+        # self.stopThread = threading.Thread(target=self.stopping, daemon=True)
+        # self.stopThread.start()
+        # print("Stopping",self.port)
+        ###
         self.container.stop()
         print("Stopped",self.port)
-
         #stop container
         # pass
+
+    # def stopping(self):
+    #     self.container.stop()
+    #     print("Stopped",self.port)
 
     def getStats(self, threaded=True):
         while True:

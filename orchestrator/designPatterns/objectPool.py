@@ -12,17 +12,21 @@ class ContainerPool:
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
+        self.count = 0
 
         for containerInd in range(self._minContainers):
             self.acquire()
     
     def acquire(self):
+        if(len(self._inactiveContainers)==0):
+            return -1
         container = self._inactiveContainers.pop()
         if(len(self._inactiveContainers) == 0 and len(self._activeContainers) < self._maxContainers):
             self.add(1)
             #when to delete?
         container.start()
         self._activeContainers.append(container)
+        self.count+=1
         return container
 
     def release(self, container):
@@ -31,6 +35,8 @@ class ContainerPool:
         container.stop()
         self._activeContainers.remove(container)
         self._inactiveContainers.append(container)
+        self.count-=1
+
     
     #additional functions that we need for scaling up/down that are not part of object pool design pattern
 

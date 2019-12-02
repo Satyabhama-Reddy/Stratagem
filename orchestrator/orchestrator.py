@@ -37,7 +37,7 @@ class Orchestrator(Observer):
 			containerSelectionObjects = {"round robin": RoundRobinSelection(), "random": RandomSelection(), "cpu usage": MaxCPUSelection()}
 
 			self._containerPool = objectPool(minContainers, maxContainers)
-			self._containerSelectionStrategy = containerSelectionObjects
+			# self._containerSelectionStrategy = containerSelectionObjects
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -51,7 +51,7 @@ class Orchestrator(Observer):
 	def update(self, arg):
 		print("Value is", arg)
 
-orchestrator = Orchestrator(2, 4, "round robin", "Normal")
+orchestrator = Orchestrator(2, 4, "round robin", "random")
 
 """
 class Orchestrator:
