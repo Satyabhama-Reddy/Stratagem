@@ -68,14 +68,14 @@ class ContainerPool:
         # print("active " ,len(self._activeContainers))
         # print("inactive " ,len(self._inactiveContainers))
         while len(self._activeContainers)!=0:
+            self._activeContainers[0].usageThreadStop=True
             self.release(self._activeContainers[0])
-            # obj.usageThreadStop=True
             # print("set to",obj.usageThreadStop)
             # # obj.usageThread.join()
             # del obj
         for i in range(len(self._inactiveContainers)):
             obj = self._inactiveContainers.pop()
-            del obj
+            obj.destructor()
 
 class ContainerIterator():
     def __init__(self, activeContainers):

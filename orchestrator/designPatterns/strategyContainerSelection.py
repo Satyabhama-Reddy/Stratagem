@@ -43,6 +43,7 @@ class MaxCPUSelection(StrategyContainerSelection):
 		maxTotalUsage = -1
 		bestContainer = None
 		for container in self._containers:
+			print(container.port, container.cpuUsage)
 			if maxTotalUsage==-1 or container.cpuUsage<maxTotalUsage:
 				bestContainer = container
 				maxTotalUsage = container.cpuUsage
