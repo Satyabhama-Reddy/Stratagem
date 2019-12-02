@@ -26,7 +26,7 @@ class Orchestrator(Observer):
 
 			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
-			# self._containerScalingStrategy = ScalingContext(scalingChoice, self._containerPool)
+			self._containerScalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
 			self.requestsQueue = PriorityQueue()
@@ -45,10 +45,11 @@ class Orchestrator(Observer):
 			@self.app.route('/stratagem/scaling', methods=["POST"])
 			def setScaling():
 				try:
-					self._containerScalingStrategy.setStrategy(dict(request.get_json()))
+					strategy=dict(request.get_json())
+					self._containerScalingStrategy.setStrategy(strategy)
 					print("Strategy", strategy, "set")
-				except:
-					print("Strategy invalid")
+				except Exception as e:
+					print("Strategy invalid",e)
 
 				return ""
 
@@ -57,6 +58,7 @@ class Orchestrator(Observer):
 				activeRequest = request
 
 				selectedContainer = self._containerSelectionStrategy.choose()
+				self._containerScalingStrategy.increment()
 				selectedContainer.requestCount+=1
 				resp = requests.request(
 					method=activeRequest.method,
@@ -85,7 +87,7 @@ class Orchestrator(Observer):
 			print("InvalidScalingChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
 
 	def update(self, arg):
-		print("Value is", arg)
+		print("Number of Containers : ", arg)
 
 	def __del__(self):
 		print("here")
