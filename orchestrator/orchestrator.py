@@ -17,7 +17,7 @@ import random
 client = docker.from_env()
 
 class Orchestrator(Observer):
-	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
+	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice={"strategy":"no scaling"}):
 		try:
 			if minContainers<=0 or type(minContainers)!=int:
 				raise InvalidMinimumContainers
@@ -26,6 +26,7 @@ class Orchestrator(Observer):
 
 			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
+			# self._containerScalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
 			self.requestsQueue = PriorityQueue()
@@ -35,6 +36,16 @@ class Orchestrator(Observer):
 			def setContainerSelection(strategy):
 				try:
 					self._containerSelectionStrategy.setStrategy(strategy)
+					print("Strategy", strategy, "set")
+				except:
+					print("Strategy invalid")
+
+				return ""
+
+			@self.app.route('/stratagem/scaling', methods=["POST"])
+			def setScaling():
+				try:
+					self._containerScalingStrategy.setStrategy(dict(request.get_json()))
 					print("Strategy", strategy, "set")
 				except:
 					print("Strategy invalid")
@@ -81,11 +92,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-<<<<<<< HEAD
 	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})
-=======
-	orchestrator = Orchestrator("flaskexample/flaskexample",5000, 4, 4,"cpu usage")\
->>>>>>> 83f9f711de7f479695b53d070e8f3173ba189385
 
 
 
