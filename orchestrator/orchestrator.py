@@ -11,16 +11,18 @@ import requests
 from flask_restful import Resource, Api
 from queue import PriorityQueue
 import threading
+import docker 
+client = docker.from_env()
 
 class Orchestrator(Observer):
-	def __init__(self, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
+	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
 		try:
 			if minContainers<=0 or type(minContainers)!=int:
 				raise InvalidMinimumContainers
 			if maxContainers<=minContainers or type(maxContainers)!=int:
 				raise InvalidMaximumContainers
 
-			self._containerPool = ContainerPool(minContainers, maxContainers)
+			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
@@ -47,7 +49,7 @@ class Orchestrator(Observer):
 				print("Request handled by port:", str(selectedContainer.port))
 				return Response(resp.content, resp.status_code, headers)
 
-			self.app.run(threaded=True)
+			self.app.run(threaded=True,host="0.0.0.0")
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -66,7 +68,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator(4, 8,"cpu usage")
+	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage")\
 
 
 

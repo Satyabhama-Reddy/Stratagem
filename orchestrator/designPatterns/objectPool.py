@@ -8,8 +8,10 @@ Usage:
 """
 
 class ContainerPool:
-    def __init__(self, minContainers, maxContainers):
-        self._inactiveContainers = [Container() for _ in range(minContainers)]
+    def __init__(self, minContainers, maxContainers,image,port):
+        self.image=image
+        self.port=port
+        self._inactiveContainers = [Container(image,port) for _ in range(minContainers)]
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
@@ -44,7 +46,7 @@ class ContainerPool:
 
     def add(self, noOfAdditionalContainers):
         for i in range(noOfAdditionalContainers):
-            self._inactiveContainers.append(Container())
+            self._inactiveContainers.append(Container(self.image,self.port))
         
 
     def delete(self, noOfContainers):
