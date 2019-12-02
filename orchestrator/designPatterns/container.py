@@ -61,7 +61,7 @@ class Container:
             self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
             if threaded==False:
                 return
-            time.sleep(10)
+            time.sleep(1)
 """
 if __name__ == "__main__":
     c=Container()
