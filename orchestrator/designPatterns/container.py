@@ -1,7 +1,6 @@
 import docker
 import time
-import threading
-
+import threading  
 client = docker.from_env()
 from pprint import pprint
 """
@@ -29,19 +28,24 @@ class Container:
         self.container=container
         self.cpuUsage=None
         self.usageThread=None
+        self.usageThreadStop=False
         # self.stopThread=None
         print("Created",self.port)
 
     def __del__(self):
         #if not stopped stop
+        # if(self.usageThread!=None):
+            # self.usageThreadStop=True
+            # print("stopping thread")
+            # self.usageThread.join()
         self.container.stop()
         self.container.remove()
         print("Deleted",self.port)
     
     def start(self):
         self.container.start()
-        self.getStats(False)
-        self.usageThread = threading.Thread(target=self.getStats, daemon=True)
+        self.getStats(self.usageThreadStopSet,False)
+        self.usageThread = threading.Thread(target=self.getStats,args=(self.usageThreadStopSet,),daemon=True)
         self.usageThread.start()
         print("Started",self.port)
         #start container
@@ -63,14 +67,21 @@ class Container:
     #     self.container.stop()
     #     print("Stopped",self.port)
 
-    def getStats(self, threaded=True):
+    def usageThreadStopSet(self):
+        print(self.usageThreadStop)
+        return self.usageThreadStop
+
+    def getStats(self,check, threaded=True):
         while True:
+            if(check()==True):
+                break
             container=client.containers.list(filters={'id':self.id})[0]
             stats = container.stats(stream=False)
             self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
             if threaded==False:
                 return
             time.sleep(10)
+        return 
 """
 if __name__ == "__main__":
     c=Container()

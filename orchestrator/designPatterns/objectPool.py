@@ -27,7 +27,7 @@ class ContainerPool:
             #when to delete?
         container.start()
         self._activeContainers.append(container)
-        # self.count+=1
+        self.numberContainers.state+=1
         return container
 
     def release(self, container):
@@ -36,7 +36,7 @@ class ContainerPool:
         container.stop()
         self._activeContainers.remove(container)
         self._inactiveContainers.append(container)
-        # self.count-=1
+        self.numberContainers.state-=1
 
     
     #additional functions that we need for scaling up/down that are not part of object pool design pattern
@@ -61,6 +61,20 @@ class ContainerPool:
 
     def __getitem__(self, key):
         return self._activeContainers[key]
+    
+    def __del__(self):
+        print("in object pool")
+        # print("active " ,len(self._activeContainers))
+        # print("inactive " ,len(self._inactiveContainers))
+        for i in range(len(self._activeContainers)):
+            obj = self._activeContainers.pop()
+            obj.usageThreadStop=True
+            print("set to",obj.usageThreadStop)
+            # obj.usageThread.join()
+            del obj
+        for i in range(len(self._inactiveContainers)):
+            obj = self._inactiveContainers.pop()
+            del obj
 
 class ContainerIterator():
     def __init__(self, activeContainers):

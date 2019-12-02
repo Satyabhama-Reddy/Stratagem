@@ -31,7 +31,12 @@ class Orchestrator(Observer):
 	def update(self, arg):
 		print("Value is", arg)
 
-orchestrator = Orchestrator(2, 4, "round robin", "random")
+	def __del__(self):
+		print("here")
+		del self._containerPool
+
+if __name__ == "__main__":
+	orchestrator = Orchestrator(2, 4, "round robin", "random")
 
 """
 class Orchestrator:
