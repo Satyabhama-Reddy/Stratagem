@@ -3,24 +3,9 @@ import sys
 sys.path.insert(1, os.getcwd()+"/designPatterns")
 
 from objectPool import ContainerPool
-from strategyContainerSelection import RoundRobinSelection, MaxCPUSelection, RandomSelection
+from strategyContainerSelection import ContainerSelectionContext
 from observer import Observer
-
-class Error(Exception):
-	pass
-
-class InvalidMinimumContainers(Error):
-	pass
-
-class InvalidMaximumContainers(Error):
-	pass
-
-class InvalidContainerSelectionChoice(Error):
-	pass
-
-class InvalidScalingChoice(Error):
-	pass
-
+from orchestratorExceptions import *
 
 class Orchestrator(Observer):
 	def __init__(self, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
@@ -29,15 +14,10 @@ class Orchestrator(Observer):
 				raise InvalidMinimumContainers
 			if maxContainers<=minContainers or type(maxContainers)!=int:
 				raise InvalidMaximumContainers
-			if containerSelectionChoice not in ["round robin", "random", "cpu usage"]:
-				raise InvalidContainerSelectionChoice
-			if scalingChoice not in ["round robin", "random", "cpu usage"]:
-				raise InvalidScalingChoice
 
-			containerSelectionObjects = {"round robin": RoundRobinSelection(), "random": RandomSelection(), "cpu usage": MaxCPUSelection()}
-
-			self._containerPool = objectPool(minContainers, maxContainers)
-			# self._containerSelectionStrategy = containerSelectionObjects
+			self._containerPool = ContainerPool(minContainers, maxContainers)
+			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
+			self._containerPool.numberContainers.subscribe(self)
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")

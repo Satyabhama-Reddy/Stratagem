@@ -1,10 +1,18 @@
 from abc import ABC, abstractmethod
 import random
+from orchestratorExceptions import *
+from observer import Observable
 
 class ContainerSelectionContext():
-	def __init__(self, strategyName):
-		self.strategies = {"round robin": RoundRobinSelection(), "random": RandomSelection(), "cpu usage": MaxCPUSelection()}
-		self.strategy = self.strategies[strategyName]
+	def __init__(self, strategyName, containers):
+		self.strategies = {"round robin": RoundRobinSelection(containers), "random": RandomSelection(containers), "cpu usage": MaxCPUSelection(containers)}
+		self.setStrategy(strategyName)
+
+	def setStrategy(self, strategyName):
+		if strategyName in self.strategies.keys():
+			self.strategy = self.strategies[strategyName]
+		else:
+			raise InvalidContainerSelectionChoice
 
 	def choice(self):
 		self.strategy.choose()

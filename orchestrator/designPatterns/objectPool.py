@@ -1,4 +1,5 @@
 from container import Container
+from observer import Observable
 
 """
 Usage:
@@ -12,7 +13,7 @@ class ContainerPool:
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
-        self.count = 0
+        self.numberContainers = Observable()
 
         for containerInd in range(self._minContainers):
             self.acquire()
@@ -26,7 +27,7 @@ class ContainerPool:
             #when to delete?
         container.start()
         self._activeContainers.append(container)
-        self.count+=1
+        # self.count+=1
         return container
 
     def release(self, container):
@@ -35,7 +36,7 @@ class ContainerPool:
         container.stop()
         self._activeContainers.remove(container)
         self._inactiveContainers.append(container)
-        self.count-=1
+        # self.count-=1
 
     
     #additional functions that we need for scaling up/down that are not part of object pool design pattern
