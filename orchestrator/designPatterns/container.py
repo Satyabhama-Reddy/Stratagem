@@ -80,8 +80,8 @@ class Container:
             self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
             if threaded==False:
                 return
-            time.sleep(10)
-        return 
+            time.sleep(1)
+        return
 """
 if __name__ == "__main__":
     c=Container()

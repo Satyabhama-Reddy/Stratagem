@@ -6,6 +6,11 @@ from objectPool import ContainerPool
 from strategyContainerSelection import ContainerSelectionContext
 from observer import Observer
 from orchestratorExceptions import *
+from flask import Flask, jsonify, request, Response
+import requests
+from flask_restful import Resource, Api
+from queue import PriorityQueue
+import threading
 
 class Orchestrator(Observer):
 	def __init__(self, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
@@ -18,6 +23,31 @@ class Orchestrator(Observer):
 			self._containerPool = ContainerPool(minContainers, maxContainers)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
+
+			self.requestsQueue = PriorityQueue()
+			self.app = Flask(__name__)
+
+			@self.app.route('/<path:path>',methods=['GET','POST','DELETE'])
+			def proxy(*args, **kwargs):
+				self.requestsQueue.put((1, request))
+				_, activeRequest = self.requestsQueue.get()
+
+				selectedContainer = self._containerSelectionStrategy.choose()
+				resp = requests.request(
+					method=activeRequest.method,
+					url=activeRequest.url.replace(activeRequest.host_url, 'http://127.0.0.1:'+str(selectedContainer.port)+'/'),
+					headers={key: value for (key, value) in activeRequest.headers if key != 'Host'},
+					data=activeRequest.get_data(),
+					cookies=activeRequest.cookies,
+					allow_redirects=False)
+
+				excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+				headers = [(name, value) for (name, value) in resp.raw.headers.items()
+						   if name.lower() not in excluded_headers]
+				print("Request handled by port:", str(selectedContainer.port))
+				return Response(resp.content, resp.status_code, headers)
+
+			self.app.run(threaded=True)
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -36,7 +66,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator(2, 4, "round robin", "random")
+	orchestrator = Orchestrator(2, 4,"cpu usage")
 
 """
 class Orchestrator:

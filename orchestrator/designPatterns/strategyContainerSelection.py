@@ -14,8 +14,8 @@ class ContainerSelectionContext():
 		else:
 			raise InvalidContainerSelectionChoice
 
-	def choice(self):
-		self.strategy.choose()
+	def choose(self):
+		return self.strategy.choose()
 
 class StrategyContainerSelection(ABC):
 	@abstractmethod
