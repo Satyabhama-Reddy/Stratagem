@@ -31,7 +31,7 @@ class Container:
         self.usageThreadStop=False
         print("Created",self.port)
 
-    def __del__(self):
+    def destructor(self):
         #if not stopped stop
         # if(self.usageThread!=None):
             # self.usageThreadStop=True
@@ -71,10 +71,10 @@ class Container:
         return self.usageThreadStop
 
     def getStats(self, check, threaded=True):
-        while check():
+        while check!=True:
             stats = self.container.stats(stream=False)
             self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
-            print(self.port, self.cpuUsage)
+            # print(self.port, self.cpuUsage)
             if threaded==False:
                 return
             time.sleep(1)

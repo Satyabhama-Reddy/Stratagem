@@ -70,7 +70,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage")
+	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage")\
 
 
 
