@@ -47,7 +47,7 @@ class Orchestrator(Observer):
 				print("Request handled by port:", str(selectedContainer.port))
 				return Response(resp.content, resp.status_code, headers)
 
-			self.app.run(threaded=True)
+			self.app.run(host="0.0.0.0",threaded=True)
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
