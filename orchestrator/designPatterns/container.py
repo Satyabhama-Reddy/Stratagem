@@ -18,7 +18,7 @@ def get_free_tcp_port():
     return port
 
 class Container:
-    def __init__(self,image='flaskexample/flaskexample',containerPort=5000):
+    def __init__(self,image,containerPort):
         port=get_free_tcp_port()
         container=client.containers.create(image,
                                       detach=True,
