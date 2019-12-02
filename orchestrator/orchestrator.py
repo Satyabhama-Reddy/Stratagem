@@ -4,7 +4,7 @@ sys.path.insert(1, os.getcwd()+"/designPatterns")
 
 from objectPool import ContainerPool
 from strategyContainerSelection import ContainerSelectionContext
-from strategyScaling import ScalingContext
+# from strategyScaling import ScalingContext
 from observer import Observer
 from orchestratorExceptions import *
 from flask import Flask, jsonify, request, Response
@@ -16,7 +16,7 @@ import docker
 client = docker.from_env()
 
 class Orchestrator(Observer):
-	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
+	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice={"strategy":"no scaling"}):
 		try:
 			if minContainers<=0 or type(minContainers)!=int:
 				raise InvalidMinimumContainers
@@ -25,7 +25,7 @@ class Orchestrator(Observer):
 
 			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
-			self._scalingStrategy = ScalingContext(scalingChoice, self._containerPool)
+			# self._scalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
 			self.requestsQueue = PriorityQueue()
@@ -70,7 +70,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage")\
+	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})\
 
 
 
