@@ -16,6 +16,7 @@ class Observable():
     def subscribe(self, observer):
         observer._observable = self
         self._observers.add(observer)
+        self.notify()
 
     def unsubscribe(self, observer):
         observer._observable = None
