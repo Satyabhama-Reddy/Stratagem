@@ -4,7 +4,7 @@ sys.path.insert(1, os.getcwd()+"/designPatterns")
 
 from objectPool import ContainerPool
 from strategyContainerSelection import ContainerSelectionContext
-# from strategyScaling import ScalingContext
+from strategyScaling import ScalingContext
 from observer import Observer
 from orchestratorExceptions import *
 from flask import Flask, jsonify, request, Response
@@ -70,7 +70,7 @@ class Orchestrator(Observer):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})\
+	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})
 
 
 
