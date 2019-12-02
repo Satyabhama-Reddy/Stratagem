@@ -8,9 +8,9 @@ Usage:
 - Define an update function that takes the current state as a parameter
 """
 
-class ContainerCountObservable():
+class Observable():
     def __init__(self):
-        self._count = 0
+        self._state = 0
         self._observers = set()
 
     def subscribe(self, observer):
@@ -23,16 +23,16 @@ class ContainerCountObservable():
 
     def notify(self):
         for observer in list(self._observers):
-            observer.update(self._count)
+            observer.update(self._state)
 
-    def getCount(self):
-        return self._count
+    def getState(self):
+        return self._state
 
-    def setCount(self, val):
-        self._count = val
+    def setState(self, val):
+        self._state = val
         self.notify()
 
-    count = property(getCount, setCount)
+    state = property(getState, setState)
 
 class Observer(ABC):
     def __init__(self):

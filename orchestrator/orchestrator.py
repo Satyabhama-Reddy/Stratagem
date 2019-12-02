@@ -17,6 +17,7 @@ class Orchestrator(Observer):
 
 			self._containerPool = ContainerPool(minContainers, maxContainers)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
+			self._containerPool.numberContainers.subscribe(self)
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")

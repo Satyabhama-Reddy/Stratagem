@@ -1,17 +1,31 @@
 from abc import ABC, abstractmethod
 import random
+from orchestratorExceptions import *
+from observer import Observer
+
+class ContainerSelectionContext():
+	def __init__(self, strategyName, containers):
+		self.strategies = {"request": RequestScaling(containers)}
+		self.setStrategy(strategyName)
+
+	def setStrategy(self, strategyName):
+		if strategyName in self.strategies.keys():
+			self.strategy = self.strategies[strategyName]
+		else:
+			raise InvalidScalingChoice
+
+	def scale(self):
+		self.strategy.scale()
 
 class StrategyScaling(ABC):
 	@abstractmethod
-	def choose(self):
+	def scale(self):
 		pass
 
 class RequestScaling(StrategyScaling):
 	def __init__(self, containers):
 		self._containers = containers
-		self._iterator = iter(containers)
-		self._currentContainer = None
-	def choose(self):
+	def scale(self):
 		try:
 			self._currentContainer = next(self._iterator)
 			return self._currentContainer

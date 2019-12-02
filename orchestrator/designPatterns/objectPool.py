@@ -1,4 +1,5 @@
 from container import Container
+from observer import Observable
 
 """
 Usage:
@@ -12,6 +13,7 @@ class ContainerPool:
         self._activeContainers = []
         self._minContainers = minContainers
         self._maxContainers = maxContainers
+        self.numberContainers = Observable()
 
         for containerInd in range(self._minContainers):
             self.acquire()

@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 import random
 from orchestratorExceptions import *
+from observer import Observable
 
 class ContainerSelectionContext():
 	def __init__(self, strategyName, containers):
