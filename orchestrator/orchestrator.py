@@ -32,24 +32,29 @@ class Orchestrator(Observer):
 			self.requestsQueue = PriorityQueue()
 			self.app = Flask(__name__)
 
-			@self.app.route('/stratagem/containerSelection/<strategy>', methods=["GET"])
+			@self.app.route('/stratagem/containerSelection/<strategy>', methods=["POST"])
 			def setContainerSelection(strategy):
-				try:
-					self._containerSelectionStrategy.setStrategy(strategy)
-					print("Strategy", strategy, "set")
-				except:
-					print("Strategy invalid")
+				if request.remote_addr=="127.0.0.1":
+					try:
+						self._containerSelectionStrategy.setStrategy(strategy)
+						print("Strategy", strategy, "set")
+					except:
+						print("Strategy invalid")
+				else:
+					print("Only localhost can change strategy")
 
 				return ""
 
 			@self.app.route('/stratagem/scaling', methods=["POST"])
 			def setScaling():
-				try:
-					self._containerScalingStrategy.setStrategy(dict(request.get_json()))
-					print("Strategy", strategy, "set")
-				except:
-					print("Strategy invalid")
-
+				if request.remote_addr=="127.0.0.1":
+					try:
+						self._containerScalingStrategy.setStrategy(dict(request.get_json()))
+						print("Strategy", strategy, "set")
+					except:
+						print("Strategy invalid")
+				else:
+					print("Only localhost can change strategy")
 				return ""
 
 			@self.app.route('/<path:path>',methods=['GET','POST','DELETE'])
