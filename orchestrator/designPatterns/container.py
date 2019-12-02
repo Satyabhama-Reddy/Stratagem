@@ -29,6 +29,7 @@ class Container:
         self.cpuUsage=None
         self.usageThread=None
         self.usageThreadStop=False
+        self.requestCount=0
         print("Created",self.port)
 
     def destructor(self):

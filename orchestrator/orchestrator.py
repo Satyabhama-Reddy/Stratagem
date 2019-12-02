@@ -13,30 +13,40 @@ from flask_restful import Resource, Api
 from queue import PriorityQueue
 import threading
 import docker 
+import random
 client = docker.from_env()
 
 class Orchestrator(Observer):
-	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice={"strategy":"no scaling"}):
+	def __init__(self,image,port, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
 		try:
 			if minContainers<=0 or type(minContainers)!=int:
 				raise InvalidMinimumContainers
-			if maxContainers<=minContainers or type(maxContainers)!=int:
+			if maxContainers<minContainers or type(maxContainers)!=int:
 				raise InvalidMaximumContainers
 
 			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
-			# self._scalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
 			self.requestsQueue = PriorityQueue()
 			self.app = Flask(__name__)
 
+			@self.app.route('/stratagem/containerSelection/<strategy>', methods=["GET"])
+			def setContainerSelection(strategy):
+				try:
+					self._containerSelectionStrategy.setStrategy(strategy)
+					print("Strategy", strategy, "set")
+				except:
+					print("Strategy invalid")
+
+				return ""
+
 			@self.app.route('/<path:path>',methods=['GET','POST','DELETE'])
 			def proxy(*args, **kwargs):
-				self.requestsQueue.put((1, request))
-				_, activeRequest = self.requestsQueue.get()
+				activeRequest = request
 
 				selectedContainer = self._containerSelectionStrategy.choose()
+				selectedContainer.requestCount+=1
 				resp = requests.request(
 					method=activeRequest.method,
 					url=activeRequest.url.replace(activeRequest.host_url, 'http://127.0.0.1:'+str(selectedContainer.port)+'/'),
@@ -44,6 +54,7 @@ class Orchestrator(Observer):
 					data=activeRequest.get_data(),
 					cookies=activeRequest.cookies,
 					allow_redirects=False)
+				selectedContainer.requestCount-=1
 
 				excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
 				headers = [(name, value) for (name, value) in resp.raw.headers.items()
@@ -51,7 +62,7 @@ class Orchestrator(Observer):
 				print("Request handled by port:", str(selectedContainer.port))
 				return Response(resp.content, resp.status_code, headers)
 
-			self.app.run(threaded=True,host="0.0.0.0")
+			self.app.run(threaded=True, host="0.0.0.0")
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -63,14 +74,18 @@ class Orchestrator(Observer):
 			print("InvalidScalingChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
 
 	def update(self, arg):
-		print("Number of containers active: ", arg)
+		print("Value is", arg)
 
 	def __del__(self):
 		print("here")
 		del self._containerPool
 
 if __name__ == "__main__":
+<<<<<<< HEAD
 	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})
+=======
+	orchestrator = Orchestrator("flaskexample/flaskexample",5000, 4, 4,"cpu usage")\
+>>>>>>> 83f9f711de7f479695b53d070e8f3173ba189385
 
 
 
