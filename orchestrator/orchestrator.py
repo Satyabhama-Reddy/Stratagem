@@ -47,7 +47,7 @@ class Orchestrator(Observer):
 				print("Request handled by port:", str(selectedContainer.port))
 				return Response(resp.content, resp.status_code, headers)
 
-			self.app.run(threaded=True)
+			# self.app.run(threaded=True)
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -68,7 +68,16 @@ class Orchestrator(Observer):
 if __name__ == "__main__":
 	orchestrator = Orchestrator(2, 4,"cpu usage")
 
+
+
+
+
+
+
+
+
 """
+
 class Orchestrator:
 	def __init__(self, ...):
 		- strategy load balancing

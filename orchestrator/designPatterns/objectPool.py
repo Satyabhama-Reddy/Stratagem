@@ -14,6 +14,7 @@ class ContainerPool:
         self._minContainers = minContainers
         self._maxContainers = maxContainers
         self.numberContainers = Observable()
+        self.numberContainers.state = 0
 
         for containerInd in range(self._minContainers):
             self.acquire()
@@ -66,12 +67,12 @@ class ContainerPool:
         print("in object pool")
         # print("active " ,len(self._activeContainers))
         # print("inactive " ,len(self._inactiveContainers))
-        for i in range(len(self._activeContainers)):
-            obj = self._activeContainers.pop()
-            obj.usageThreadStop=True
-            print("set to",obj.usageThreadStop)
-            # obj.usageThread.join()
-            del obj
+        while len(self._activeContainers)!=0:
+            self.release(self._activeContainers[0])
+            # obj.usageThreadStop=True
+            # print("set to",obj.usageThreadStop)
+            # # obj.usageThread.join()
+            # del obj
         for i in range(len(self._inactiveContainers)):
             obj = self._inactiveContainers.pop()
             del obj

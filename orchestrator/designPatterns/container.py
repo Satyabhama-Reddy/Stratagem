@@ -29,7 +29,6 @@ class Container:
         self.cpuUsage=None
         self.usageThread=None
         self.usageThreadStop=False
-        # self.stopThread=None
         print("Created",self.port)
 
     def __del__(self):
@@ -68,16 +67,14 @@ class Container:
     #     print("Stopped",self.port)
 
     def usageThreadStopSet(self):
-        print(self.usageThreadStop)
+        # print(self.usageThreadStop)
         return self.usageThreadStop
 
-    def getStats(self,check, threaded=True):
-        while True:
-            if(check()==True):
-                break
-            container=client.containers.list(filters={'id':self.id})[0]
-            stats = container.stats(stream=False)
+    def getStats(self, check, threaded=True):
+        while check():
+            stats = self.container.stats(stream=False)
             self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
+            print(self.port, self.cpuUsage)
             if threaded==False:
                 return
             time.sleep(1)
