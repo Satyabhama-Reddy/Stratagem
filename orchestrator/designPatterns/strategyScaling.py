@@ -3,7 +3,7 @@ import random
 from orchestratorExceptions import *
 from observer import Observer
 
-class ContainerSelectionContext():
+class ScalingContext():
 	def __init__(self, strategyName, containers):
 		self.strategies = {"request": RequestScaling(containers)}
 		self.setStrategy(strategyName)

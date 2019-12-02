@@ -4,6 +4,7 @@ sys.path.insert(1, os.getcwd()+"/designPatterns")
 
 from objectPool import ContainerPool
 from strategyContainerSelection import ContainerSelectionContext
+from strategyScaling import ScalingContext
 from observer import Observer
 from orchestratorExceptions import *
 from flask import Flask, jsonify, request, Response
@@ -24,6 +25,7 @@ class Orchestrator(Observer):
 
 			self._containerPool = ContainerPool(minContainers, maxContainers,image,port)
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
+			self._scalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
 
 			self.requestsQueue = PriorityQueue()
@@ -61,7 +63,7 @@ class Orchestrator(Observer):
 			print("InvalidScalingChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
 
 	def update(self, arg):
-		print("Value is", arg)
+		print("Number of containers active: ", arg)
 
 	def __del__(self):
 		print("here")
