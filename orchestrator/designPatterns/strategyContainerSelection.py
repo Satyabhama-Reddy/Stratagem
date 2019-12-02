@@ -1,6 +1,14 @@
 from abc import ABC, abstractmethod
 import random
 
+class ContainerSelectionContext():
+	def __init__(self, strategyName):
+		self.strategies = {"round robin": RoundRobinSelection(), "random": RandomSelection(), "cpu usage": MaxCPUSelection()}
+		self.strategy = self.strategies[strategyName]
+
+	def choice(self):
+		self.strategy.choose()
+
 class StrategyContainerSelection(ABC):
 	@abstractmethod
 	def choose(self):

@@ -1,3 +1,59 @@
+import os
+import sys
+sys.path.insert(1, os.getcwd()+"/designPatterns")
+
+from objectPool import ContainerPool
+from strategyContainerSelection import RoundRobinSelection, MaxCPUSelection, RandomSelection
+from observer import Observer
+
+class Error(Exception):
+	pass
+
+class InvalidMinimumContainers(Error):
+	pass
+
+class InvalidMaximumContainers(Error):
+	pass
+
+class InvalidContainerSelectionChoice(Error):
+	pass
+
+class InvalidScalingChoice(Error):
+	pass
+
+
+class Orchestrator(Observer):
+	def __init__(self, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice="normal"):
+		try:
+			if minContainers<=0 or type(minContainers)!=int:
+				raise InvalidMinimumContainers
+			if maxContainers<=minContainers or type(maxContainers)!=int:
+				raise InvalidMaximumContainers
+			if containerSelectionChoice not in ["round robin", "random", "cpu usage"]:
+				raise InvalidContainerSelectionChoice
+			if scalingChoice not in ["round robin", "random", "cpu usage"]:
+				raise InvalidScalingChoice
+
+			containerSelectionObjects = {"round robin": RoundRobinSelection(), "random": RandomSelection(), "cpu usage": MaxCPUSelection()}
+
+			self._containerPool = objectPool(minContainers, maxContainers)
+			self._containerSelectionStrategy = containerSelectionObjects
+
+		except InvalidMinimumContainers:
+			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
+		except InvalidMaximumContainers:
+			print("InvalidMaximumContainers: maxContainers must be an integer value greater than 0 and greater than or equal to minContainers")
+		except InvalidContainerSelectionChoice:
+			print("InvalidContainerSelectionChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
+		except InvalidScalingChoice:
+			print("InvalidScalingChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
+
+	def update(self, arg):
+		print("Value is", arg)
+
+orchestrator = Orchestrator(2, 4, "round robin", "Normal")
+
+"""
 class Orchestrator:
 	def __init__(self, ...):
 		- strategy load balancing
@@ -5,6 +61,7 @@ class Orchestrator:
 		- container object pool
 		- observable container count
 		- initialize scaling thread
+
 
 	def __del__(self):
 		- delete containers
@@ -46,3 +103,4 @@ class Orchestrator:
 
 
 	make it a singleton
+"""
