@@ -20,9 +20,13 @@ def get_free_tcp_port():
 class Container:
     def __init__(self,image,containerPort):
         port=get_free_tcp_port()
-        container=client.containers.create(image,
+        try:
+            container=client.containers.create(image,
                                       detach=True,
                                       ports={(str(containerPort)+'/tcp'): port}) # inside : outside
+        except Exception as e:
+            print(e)
+            exit()
         self.id=container.id
         self.port=port
         self.container=container
