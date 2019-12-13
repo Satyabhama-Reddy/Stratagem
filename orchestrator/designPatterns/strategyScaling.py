@@ -16,6 +16,8 @@ class ScalingContext():
 		if strategyObject!=False:
 			self.strategy = strategyObject
 			self.strategyDetails = strategy
+			if("perDuration" not in self.strategyDetails.keys()):
+				self.strategyDetails["perDuration"]=10
 		else:
 			raise InvalidScalingChoice
 
@@ -35,8 +37,6 @@ class ScalingContext():
 				return RequestLoad(containers,strategy["numberOfRequests"],strategy["perDuration"])
 
 	def scale(self):
-		if("perDuration" not in self.strategyDetails.keys()):
-			self.strategyDetails["perDuration"]=10
 		thread = threading.Thread(target=self.scaleManager,daemon=True)
 		thread.start()
 
