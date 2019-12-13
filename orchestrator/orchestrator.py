@@ -14,7 +14,14 @@ from queue import PriorityQueue
 import threading
 import docker 
 import random
+
+import signal
+import sys
+
+
+
 client = docker.from_env()
+
 
 class Orchestrator(Observer):
 	def __init__(self,image,containerPort,port=5000, minContainers=2, maxContainers=4, containerSelectionChoice="round robin", scalingChoice={"strategy":"no scaling"}):
@@ -28,8 +35,8 @@ class Orchestrator(Observer):
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
 			self._containerScalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
-
 			self.requestsQueue = PriorityQueue()
+			signal.signal(signal.SIGINT, self.signal_handler)
 			self.app = Flask(__name__)
 
 			@self.app.route('/stratagem/containerSelection/<strategy>', methods=["POST"])
@@ -80,8 +87,10 @@ class Orchestrator(Observer):
 						   if name.lower() not in excluded_headers]
 				print("Request handled by port:", str(selectedContainer.port))
 				return Response(resp.content, resp.status_code, headers)
-
-			self.app.run(threaded=True,port=port, host="0.0.0.0")
+			try:
+				self.app.run(threaded=True,port=port, host="0.0.0.0")
+			except KeyboardInterrupt:
+				print("exiting")
 
 		except InvalidMinimumContainers:
 			print("InvalidMinimumContainers: minContainers must be an integer value greater than 0 and lesser than or equal to maxContainers")
@@ -95,7 +104,13 @@ class Orchestrator(Observer):
 	def update(self, arg):
 		print("Number of Containers : ", arg)
 
-	def __del__(self):
-		print("here")
-		del self._containerPool
+	def destructor(self):
+		# print("here")
+		self._containerPool.destructor()
 
+	def signal_handler(self, sig, frame):
+		print('\nStopping Containers..')
+		self.destructor()
+		
+		sys.exit(0)
+		

@@ -37,9 +37,12 @@ class ContainerPool:
         # how to decide which container to release..?
         # if i pop the last container in active containers..that might be serving requests
         container.stop()
-        self._activeContainers.remove(container)
-        self._inactiveContainers.append(container)
-        self.numberContainers.state-=1
+        try:
+            self._activeContainers.remove(container)
+            self._inactiveContainers.append(container)
+            self.numberContainers.state-=1
+        except ValueError:
+            pass
 
     def getFreeContainer(self):
         container = None
@@ -73,8 +76,8 @@ class ContainerPool:
     def __getitem__(self, key):
         return self._activeContainers[key]
     
-    def __del__(self):
-        print("in object pool")
+    def destructor(self):
+        # print("in object pool")
         # print("active " ,len(self._activeContainers))
         # print("inactive " ,len(self._inactiveContainers))
         while len(self._activeContainers)!=0:

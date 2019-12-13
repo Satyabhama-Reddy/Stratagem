@@ -77,8 +77,11 @@ class Container:
 
     def getStats(self, check, threaded=True):
         while check!=True:
-            stats = self.container.stats(stream=False)
-            self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
+            try:
+                stats = self.container.stats(stream=False)
+                self.cpuUsage = stats["cpu_stats"]["cpu_usage"]["total_usage"]
+            except:
+                pass
             # print(self.port, self.cpuUsage)
             if threaded==False:
                 return
