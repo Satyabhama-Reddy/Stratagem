@@ -10,10 +10,12 @@ from orchestratorExceptions import *
 from flask import Flask, jsonify, request, Response
 import requests
 from flask_restful import Resource, Api
-from queue import PriorityQueue
+from queue import PriorityQueue, Queue
 import threading
 import docker 
 import random
+import time
+import signal
 client = docker.from_env()
 
 class Orchestrator(Observer):
@@ -28,9 +30,17 @@ class Orchestrator(Observer):
 			self._containerSelectionStrategy = ContainerSelectionContext(containerSelectionChoice, self._containerPool)
 			# self._containerScalingStrategy = ScalingContext(scalingChoice, self._containerPool)
 			self._containerPool.numberContainers.subscribe(self)
+			self.runThreads = True
+			signal.signal(signal.SIGINT, self.handler)
 
 			self.requestsQueue = PriorityQueue()
+			self.requestQueueLock = threading.Lock()
+
+			# self.requestHandler()
 			self.app = Flask(__name__)
+			self.requestThread = threading.Thread(target=self.requestHandler, daemon=True)
+			self.requestThread.start()
+
 
 			@self.app.route('/stratagem/containerSelection/<strategy>', methods=["GET"])
 			def setContainerSelection(strategy):
@@ -52,19 +62,30 @@ class Orchestrator(Observer):
 
 				return ""
 
+
 			@self.app.route('/<path:path>',methods=['GET','POST','DELETE'])
 			def proxy(*args, **kwargs):
-				activeRequest = request
+				# priority = 1
+				# if request.remote_addr!="127.0.0.1":
+				# 	priority = 0
+				requestCondition = threading.Event()
 
-				selectedContainer = self._containerSelectionStrategy.choose()
+				self.requestQueueLock.acquire()
+				self.requestsQueue.put((1, request, requestCondition, 0))
+				self.requestQueueLock.release()
+				requestCondition.wait()
+
+				_, activeRequest, requestCondition, selectedContainer = self.requestsQueue.get()
+				requestCondition.set()
+
 				selectedContainer.requestCount+=1
 				resp = requests.request(
-					method=activeRequest.method,
-					url=activeRequest.url.replace(activeRequest.host_url, 'http://127.0.0.1:'+str(selectedContainer.port)+'/'),
-					headers={key: value for (key, value) in activeRequest.headers if key != 'Host'},
-					data=activeRequest.get_data(),
-					cookies=activeRequest.cookies,
-					allow_redirects=False)
+				method=activeRequest.method,
+				url=activeRequest.url.replace(activeRequest.host_url, 'http://127.0.0.1:'+str(selectedContainer.port)+'/'),
+				headers={key: value for (key, value) in activeRequest.headers if key != 'Host'},
+				data=activeRequest.get_data(),
+				cookies=activeRequest.cookies,
+				allow_redirects=False)
 				selectedContainer.requestCount-=1
 
 				excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
@@ -84,15 +105,43 @@ class Orchestrator(Observer):
 		except InvalidScalingChoice:
 			print("InvalidScalingChoice: containerSelectionChoice must be in \"round robin\", \"random\", \"cpu usage\"")
 
+	def handler(self, s, f):
+		self.runThreads = False
+		time.sleep(1)
+		sys.exit()
+
+	def requestHandler(self):
+		print("Started thread")
+		while self.runThreads:
+			selectedContainer = self._containerSelectionStrategy.choose()
+			print(selectedContainer.port)
+			while True:
+				if self.runThreads==False:
+					return
+				self.requestQueueLock.acquire()
+				if self.requestsQueue.empty()==False:
+					self.requestQueueLock.release()
+					break
+				self.requestQueueLock.release()
+
+			self.requestQueueLock.acquire()
+			requestList = list(self.requestsQueue.get())
+			requestList[-1] = selectedContainer
+			self.requestsQueue.put(tuple(requestList))
+			requestList[-2].set()
+			self.requestQueueLock.release()
+			requestList[-2].wait()
+
+
+
 	def update(self, arg):
 		print("Value is", arg)
 
-	def __del__(self):
-		print("here")
+	def destructor(self):
 		del self._containerPool
 
 if __name__ == "__main__":
-	orchestrator = Orchestrator("flaskexample/flaskexample",5000,2, 4,"cpu usage",{"strategy":"no scaling"})
+	orchestrator = Orchestrator("flaskexample/flaskexample", 5000, 1, 4, "round robin", {"strategy":"no scaling"})
 
 
 

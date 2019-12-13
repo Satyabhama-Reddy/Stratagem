@@ -30,11 +30,14 @@ class RoundRobinSelection(StrategyContainerSelection):
 	def choose(self):
 		try:
 			self._currentContainer = next(self._iterator)
-			return self._currentContainer
 		except:
 			self._iterator = iter(self._containers)
 			self._currentContainer = next(self._iterator)
+		finally:
+			if self._currentContainer.requestCount!=0:
+				return self.choose()
 			return self._currentContainer
+
 
 class MaxCPUSelection(StrategyContainerSelection):
 	def __init__(self, containers):
@@ -42,11 +45,12 @@ class MaxCPUSelection(StrategyContainerSelection):
 	def choose(self):
 		maxTotalUsage = -1
 		bestContainer = None
-		for container in self._containers:
-			print(container.port, container.cpuUsage)
-			if maxTotalUsage==-1 or container.cpuUsage<maxTotalUsage:
-				bestContainer = container
-				maxTotalUsage = container.cpuUsage
+		while maxTotalUsage==-1:
+			for container in self._containers:
+				print(container.port, container.cpuUsage)
+				if maxTotalUsage==-1 or container.cpuUsage<maxTotalUsage:
+					bestContainer = container
+					maxTotalUsage = container.cpuUsage
 		return bestContainer
 
 
